@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { CanvasEditor } from './components/CanvasEditor'
-import { Undo2, Download, Trash2, Lock, Unlock, Upload, Sparkles } from 'lucide-react'
+import { Undo2, Download, Trash2, Lock, Unlock, Upload, Sun, Moon } from 'lucide-react'
 
 function App() {
   const [items, setItems] = useState([])
@@ -9,6 +9,25 @@ function App() {
   const [history, setHistory] = useState([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [isRoomLocked, setIsRoomLocked] = useState(false)
+  const [theme, setTheme] = useState(() => {
+    // Check for saved preference or system preference
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bathroom-planner-theme')
+      if (saved) return saved
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+    return 'light'
+  })
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('bathroom-planner-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }
 
   const pushHistory = useCallback(() => {
     setHistory(prev => {
@@ -105,13 +124,13 @@ function App() {
           {items.length > 0 && (
             <div style={{
               padding: '6px 14px',
-              background: 'white',
+              background: 'var(--bg-item)',
               borderRadius: '20px',
               fontSize: '13px',
               fontWeight: 600,
-              color: '#1a1a2e',
-              border: '1px solid rgba(0,0,0,0.08)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-item)',
+              boxShadow: 'var(--shadow-sm)',
             }}>
               {items.length} {items.length === 1 ? 'element' : 'elements'}
             </div>
@@ -130,10 +149,10 @@ function App() {
               fontWeight: 600,
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              background: isRoomLocked ? '#ff6600' : 'white',
-              color: isRoomLocked ? 'white' : '#64748b',
-              border: isRoomLocked ? 'none' : '1px solid rgba(0,0,0,0.08)',
-              boxShadow: isRoomLocked ? '0 2px 8px rgba(255,102,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
+              background: isRoomLocked ? '#ff6600' : 'var(--bg-item)',
+              color: isRoomLocked ? 'white' : 'var(--text-secondary)',
+              border: isRoomLocked ? 'none' : '1px solid var(--border-item)',
+              boxShadow: isRoomLocked ? '0 2px 8px rgba(255,102,0,0.3)' : 'var(--shadow-sm)',
             }}
             title={isRoomLocked ? "Click to unlock rooms" : "Click to lock rooms in place"}
           >
@@ -144,6 +163,16 @@ function App() {
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 border border-transparent hover:border-black/5"
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            style={{ background: theme === 'dark' ? 'var(--border-light)' : 'transparent' }}
+          >
+            {theme === 'light' ? <Moon className="w-4.5 h-4.5" /> : <Sun className="w-4.5 h-4.5" />}
+          </button>
 
           {/* Import Template */}
           <button
@@ -187,7 +216,7 @@ function App() {
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
-        <Sidebar selectedIds={selectedIds} onDelete={handleDelete} onAdd={handleAddItem} />
+        <Sidebar selectedIds={selectedIds} onDelete={handleDelete} onAdd={handleAddItem} theme={theme} />
         <CanvasEditor
           items={items}
           setItems={setItems}
@@ -195,6 +224,7 @@ function App() {
           setSelectedIds={setSelectedIds}
           pushHistory={pushHistory}
           isRoomLocked={isRoomLocked}
+          theme={theme}
         />
       </div>
     </div>

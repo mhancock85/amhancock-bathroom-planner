@@ -27,7 +27,7 @@ const FIXTURE_ITEMS = [
   { type: 'mirror', label: 'Mirror', icon: ScanFace, width: 80, height: 5 },
 ];
 
-export function Sidebar({ selectedIds, onDelete, onAdd }) {
+export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
   const handleDragStart = (e, item) => {
     e.dataTransfer.setData('application/json', JSON.stringify(item));
     e.dataTransfer.effectAllowed = 'copy';
@@ -37,10 +37,10 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
     <div
       style={{
         width: '280px',
-        background: 'rgba(255, 255, 255, 0.85)',
+        background: 'var(--bg-sidebar)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(0,0,0,0.06)',
+        borderRight: '1px solid var(--border-light)',
         padding: '20px',
         display: 'flex',
         flexDirection: 'column',
@@ -55,7 +55,7 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
         alignItems: 'center',
         gap: '12px',
         paddingBottom: '16px',
-        borderBottom: '1px solid rgba(0,0,0,0.06)'
+        borderBottom: '1px solid var(--border-light)'
       }}>
         <div style={{
           width: '44px',
@@ -70,8 +70,8 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
           <Bath style={{ width: '22px', height: '22px', color: 'white' }} />
         </div>
         <div>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#1a1a2e' }}>Elements</h2>
-          <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>Click or drag to add</p>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Elements</h2>
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>Click or drag to add</p>
         </div>
       </div>
 
@@ -80,7 +80,7 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
         <h3 style={{
           fontSize: '10px',
           fontWeight: 700,
-          color: '#94a3b8',
+          color: 'var(--text-muted)',
           textTransform: 'uppercase',
           letterSpacing: '1px',
           marginBottom: '12px',
@@ -103,37 +103,37 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
                 alignItems: 'center',
                 gap: '12px',
                 padding: '12px',
-                background: 'white',
-                border: '1px solid rgba(0,0,0,0.06)',
+                background: 'var(--bg-item)',
+                border: '1px solid var(--border-item)',
                 borderRadius: '14px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(255, 102, 0, 0.3)';
                 e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 102, 0, 0.1)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                e.currentTarget.style.borderColor = 'var(--border-item)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
               }}
             >
               <div style={{
                 width: '40px',
                 height: '40px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                background: 'var(--bg-item-hover)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px solid rgba(0,0,0,0.04)',
+                border: '1px solid var(--border-item)',
               }}>
-                <item.icon style={{ width: '20px', height: '20px', color: '#64748b' }} />
+                <item.icon style={{ width: '20px', height: '20px', color: 'var(--text-secondary)' }} />
               </div>
               <div>
-                <span style={{ fontWeight: 600, fontSize: '14px', color: '#1a1a2e' }}>{item.label}</span>
-                <p style={{ margin: 0, fontSize: '10px', color: '#94a3b8' }}>Drag to canvas</p>
+                <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{item.label}</span>
+                <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-muted)' }}>Drag to canvas</p>
               </div>
             </div>
           ))}
@@ -145,7 +145,7 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
         <h3 style={{
           fontSize: '10px',
           fontWeight: 700,
-          color: '#94a3b8',
+          color: 'var(--text-muted)',
           textTransform: 'uppercase',
           letterSpacing: '1px',
           marginBottom: '12px',
@@ -173,12 +173,12 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '14px 8px',
-                background: 'white',
-                border: '1px solid rgba(0,0,0,0.06)',
+                background: 'var(--bg-item)',
+                border: '1px solid var(--border-item)',
                 borderRadius: '14px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(0, 91, 171, 0.3)';
@@ -186,8 +186,8 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
                 e.currentTarget.style.transform = 'translateY(-2px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                e.currentTarget.style.borderColor = 'var(--border-item)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
@@ -195,18 +195,18 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
                 width: '44px',
                 height: '44px',
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                background: 'var(--bg-item-hover)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px solid rgba(0,0,0,0.04)',
+                border: '1px solid var(--border-item)',
               }}>
-                <item.icon style={{ width: '22px', height: '22px', color: '#64748b' }} />
+                <item.icon style={{ width: '22px', height: '22px', color: 'var(--text-secondary)' }} />
               </div>
               <span style={{
                 fontWeight: 500,
                 fontSize: '11px',
-                color: '#64748b',
+                color: 'var(--text-secondary)',
                 textAlign: 'center',
               }}>
                 {item.label}
@@ -247,26 +247,26 @@ export function Sidebar({ selectedIds, onDelete, onAdd }) {
       {/* Footer Tips */}
       <div style={{
         paddingTop: '16px',
-        borderTop: '1px solid rgba(0,0,0,0.06)',
+        borderTop: '1px solid var(--border-light)',
         textAlign: 'center',
       }}>
-        <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: '#94a3b8' }}>
+        <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: 'var(--text-muted)' }}>
           <kbd style={{
-            background: 'white',
+            background: 'var(--bg-item)',
             padding: '2px 6px',
             borderRadius: '4px',
             fontSize: '10px',
-            border: '1px solid rgba(0,0,0,0.1)',
+            border: '1px solid var(--border-item)',
             fontFamily: 'monospace',
           }}>Shift</kbd> to select multiple
         </p>
-        <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>
+        <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)' }}>
           <kbd style={{
-            background: 'white',
+            background: 'var(--bg-item)',
             padding: '2px 6px',
             borderRadius: '4px',
             fontSize: '10px',
-            border: '1px solid rgba(0,0,0,0.1)',
+            border: '1px solid var(--border-item)',
             fontFamily: 'monospace',
           }}>Delete</kbd> to remove selected
         </p>

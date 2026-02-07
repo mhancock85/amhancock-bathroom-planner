@@ -1,13 +1,16 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Stage, Layer, Rect, Transformer, Group, Text, Line, Ellipse, Arc, Circle } from 'react-konva';
-import { MousePointer2, Move } from 'lucide-react';
+import { MousePointer2, Move, ZoomIn, ZoomOut, Maximize, RotateCcw } from 'lucide-react';
 
 const GRID_SIZE = 50;
 const PIXELS_PER_MM = 0.5;
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 3;
+const ZOOM_STEP = 0.25;
 
 const pxToMm = (px) => Math.round(px / PIXELS_PER_MM);
 
-export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pushHistory, isRoomLocked }) {
+export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pushHistory, isRoomLocked, theme }) {
   const stageRef = useRef(null);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -15,8 +18,25 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
   const isSelecting = useRef(false);
   const selectionStart = useRef({ x: 0, y: 0 });
 
+  // Zoom and pan state
+  const [zoom, setZoom] = useState(1);
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+
   // Multi-drag state
   const dragStartPositions = useRef({});
+
+  // Theme-aware colors
+  const isDark = theme === 'dark';
+  const colors = {
+    shapeFill: isDark ? '#252540' : '#ffffff',
+    shapeStroke: isDark ? '#3a3a5a' : '#e2e8f0',
+    shapeShadow: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.1)',
+    innerFill: isDark ? '#1e1e35' : '#f8fafc',
+    gridColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+    textColor: isDark ? '#a0a0b5' : '#64748b',
+    accentBlue: isDark ? '#60a5fa' : '#bae6fd',
+    accentBlueBorder: isDark ? '#3b82f6' : '#7dd3fc',
+  };
 
   useEffect(() => {
     const updateSize = () => {
@@ -31,6 +51,119 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
     updateSize();
     return () => window.removeEventListener('resize', updateSize);
   }, []);
+
+  // Handle mouse wheel for zooming
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e) => {
+      // Only zoom if Ctrl/Cmd is held or it's a pinch gesture
+      if (!e.ctrlKey && !e.metaKey) return;
+      
+      e.preventDefault();
+      
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      const oldZoom = zoom;
+      const pointer = stage.getPointerPosition();
+      
+      // Determine zoom direction
+      const direction = e.deltaY < 0 ? 1 : -1;
+      const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, oldZoom + direction * ZOOM_STEP));
+      
+      if (newZoom === oldZoom) return;
+
+      // Calculate new position to zoom towards pointer
+      const mousePointTo = {
+        x: (pointer.x - stagePos.x) / oldZoom,
+        y: (pointer.y - stagePos.y) / oldZoom,
+      };
+
+      const newPos = {
+        x: pointer.x - mousePointTo.x * newZoom,
+        y: pointer.y - mousePointTo.y * newZoom,
+      };
+
+      setZoom(newZoom);
+      setStagePos(newPos);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [zoom, stagePos]);
+
+  // Zoom controls
+  const handleZoomIn = useCallback(() => {
+    const newZoom = Math.min(MAX_ZOOM, zoom + ZOOM_STEP);
+    // Zoom towards center
+    const centerX = dimensions.width / 2;
+    const centerY = dimensions.height / 2;
+    const mousePointTo = {
+      x: (centerX - stagePos.x) / zoom,
+      y: (centerY - stagePos.y) / zoom,
+    };
+    setStagePos({
+      x: centerX - mousePointTo.x * newZoom,
+      y: centerY - mousePointTo.y * newZoom,
+    });
+    setZoom(newZoom);
+  }, [zoom, stagePos, dimensions]);
+
+  const handleZoomOut = useCallback(() => {
+    const newZoom = Math.max(MIN_ZOOM, zoom - ZOOM_STEP);
+    const centerX = dimensions.width / 2;
+    const centerY = dimensions.height / 2;
+    const mousePointTo = {
+      x: (centerX - stagePos.x) / zoom,
+      y: (centerY - stagePos.y) / zoom,
+    };
+    setStagePos({
+      x: centerX - mousePointTo.x * newZoom,
+      y: centerY - mousePointTo.y * newZoom,
+    });
+    setZoom(newZoom);
+  }, [zoom, stagePos, dimensions]);
+
+  const handleResetZoom = useCallback(() => {
+    setZoom(1);
+    setStagePos({ x: 0, y: 0 });
+  }, []);
+
+  const handleFitToScreen = useCallback(() => {
+    if (items.length === 0) {
+      handleResetZoom();
+      return;
+    }
+
+    // Calculate bounding box of all items
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    items.forEach(item => {
+      minX = Math.min(minX, item.x);
+      minY = Math.min(minY, item.y);
+      maxX = Math.max(maxX, item.x + item.width);
+      maxY = Math.max(maxY, item.y + item.height);
+    });
+
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+    const padding = 80; // Padding around content
+
+    // Calculate zoom to fit
+    const scaleX = (dimensions.width - padding * 2) / contentWidth;
+    const scaleY = (dimensions.height - padding * 2) / contentHeight;
+    const newZoom = Math.min(Math.max(MIN_ZOOM, Math.min(scaleX, scaleY)), MAX_ZOOM);
+
+    // Calculate position to center content
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const newPosX = dimensions.width / 2 - centerX * newZoom;
+    const newPosY = dimensions.height / 2 - centerY * newZoom;
+
+    setZoom(newZoom);
+    setStagePos({ x: newPosX, y: newPosY });
+  }, [items, dimensions, handleResetZoom]);
 
   // Cursor handling for better UX
   const setCursor = (cursor) => {
@@ -69,7 +202,14 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
     const stage = stageRef.current;
     if (!stage) return;
     stage.setPointersPositions(e);
-    const pos = stage.getPointerPosition() || { x: 100, y: 100 };
+    const pointerPos = stage.getPointerPosition() || { x: 100, y: 100 };
+    
+    // Adjust for zoom and pan
+    const pos = {
+      x: (pointerPos.x - stagePos.x) / zoom,
+      y: (pointerPos.y - stagePos.y) / zoom,
+    };
+    
     const itemData = e.dataTransfer.getData('application/json');
     if (itemData) {
       pushHistory();
@@ -90,9 +230,14 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
 
   const handleStageMouseDown = (e) => {
     if (e.target === e.target.getStage()) {
-      const pos = e.target.getStage().getPointerPosition();
+      const pointerPos = e.target.getStage().getPointerPosition();
+      // Convert to stage coordinates
+      const pos = {
+        x: (pointerPos.x - stagePos.x) / zoom,
+        y: (pointerPos.y - stagePos.y) / zoom,
+      };
       isSelecting.current = true;
-      selectionStart.current = { x: pos.x, y: pos.y };
+      selectionStart.current = pos;
       setSelectionRect({ x: pos.x, y: pos.y, width: 0, height: 0 });
       if (!e.evt.shiftKey) setSelectedIds([]);
     }
@@ -101,7 +246,11 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
   const handleStageMouseMove = (e) => {
     // Handle selection rectangle
     if (isSelecting.current) {
-      const pos = e.target.getStage().getPointerPosition();
+      const pointerPos = e.target.getStage().getPointerPosition();
+      const pos = {
+        x: (pointerPos.x - stagePos.x) / zoom,
+        y: (pointerPos.y - stagePos.y) / zoom,
+      };
       const x = Math.min(pos.x, selectionStart.current.x);
       const y = Math.min(pos.y, selectionStart.current.y);
       const width = Math.abs(pos.x - selectionStart.current.x);
@@ -112,8 +261,8 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
 
     // Update cursor based on what's under the mouse
     const stage = e.target.getStage();
-    const pos = stage.getPointerPosition();
-    const shape = stage.getIntersection(pos);
+    const pointerPos = stage.getPointerPosition();
+    const shape = stage.getIntersection(pointerPos);
 
     if (!shape) {
       setCursor('default');
@@ -232,12 +381,19 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
     return getOrder(a.type) - getOrder(b.type);
   });
 
+  // Calculate grid for current zoom
+  const scaledGridSize = GRID_SIZE;
+  const gridStartX = Math.floor(-stagePos.x / zoom / scaledGridSize) * scaledGridSize;
+  const gridStartY = Math.floor(-stagePos.y / zoom / scaledGridSize) * scaledGridSize;
+  const gridEndX = gridStartX + Math.ceil(dimensions.width / zoom / scaledGridSize + 2) * scaledGridSize;
+  const gridEndY = gridStartY + Math.ceil(dimensions.height / zoom / scaledGridSize + 2) * scaledGridSize;
+
   return (
     <div
       ref={containerRef}
       className="flex-1 relative overflow-hidden rounded-tl-3xl"
       style={{
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+        background: 'var(--canvas-bg)',
         boxShadow: 'inset 0 2px 20px rgba(0, 0, 0, 0.03)',
       }}
       onDrop={handleDrop}
@@ -247,10 +403,84 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
       <div className="absolute top-4 right-4 w-20 h-20 border-t-2 border-r-2 border-[var(--primary)]/10 rounded-tr-3xl pointer-events-none" />
       <div className="absolute bottom-4 left-4 w-20 h-20 border-b-2 border-l-2 border-[var(--secondary)]/10 rounded-bl-3xl pointer-events-none" />
 
+      {/* Zoom Controls - n8n style */}
+      <div 
+        className="zoom-toolbar"
+        style={{
+          position: 'absolute',
+          bottom: '16px',
+          right: '16px',
+          zIndex: 10,
+        }}
+      >
+        <button
+          className="zoom-btn"
+          onClick={handleZoomOut}
+          disabled={zoom <= MIN_ZOOM}
+          title="Zoom Out"
+        >
+          <ZoomOut style={{ width: '16px', height: '16px' }} />
+        </button>
+        
+        <div className="zoom-percentage">
+          {Math.round(zoom * 100)}%
+        </div>
+        
+        <button
+          className="zoom-btn"
+          onClick={handleZoomIn}
+          disabled={zoom >= MAX_ZOOM}
+          title="Zoom In"
+        >
+          <ZoomIn style={{ width: '16px', height: '16px' }} />
+        </button>
+        
+        <div className="zoom-divider" />
+        
+        <button
+          className="zoom-btn"
+          onClick={handleFitToScreen}
+          title="Fit to Screen"
+        >
+          <Maximize style={{ width: '16px', height: '16px' }} />
+        </button>
+        
+        <button
+          className="zoom-btn"
+          onClick={handleResetZoom}
+          title="Reset Zoom (100%)"
+        >
+          <RotateCcw style={{ width: '16px', height: '16px' }} />
+        </button>
+      </div>
+
+      {/* Zoom hint */}
+      <div 
+        style={{
+          position: 'absolute',
+          bottom: '16px',
+          left: '16px',
+          zIndex: 10,
+          fontSize: '12px',
+          padding: '6px 12px',
+          borderRadius: '8px',
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(10px)',
+          color: 'var(--text-muted)',
+          border: '1px solid var(--border-glass)',
+        }}
+      >
+        <span style={{ opacity: 0.7 }}>⌘/Ctrl + Scroll to zoom</span>
+      </div>
+
       <Stage
         width={dimensions.width}
         height={dimensions.height}
         ref={stageRef}
+        scaleX={zoom}
+        scaleY={zoom}
+        x={stagePos.x}
+        y={stagePos.y}
         onMouseDown={handleStageMouseDown}
         onMouseMove={handleStageMouseMove}
         onMouseUp={handleStageMouseUp}
@@ -263,21 +493,21 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
         <Layer>
           {/* Grid - Subtle and elegant */}
           <Group>
-            {Array.from({ length: Math.ceil(dimensions.width / GRID_SIZE) + 1 }).map((_, i) => (
+            {Array.from({ length: Math.ceil((gridEndX - gridStartX) / scaledGridSize) + 1 }).map((_, i) => (
               <Line
                 key={`v-${i}`}
-                points={[i * GRID_SIZE, 0, i * GRID_SIZE, dimensions.height]}
-                stroke="rgba(0,0,0,0.04)"
-                strokeWidth={1}
+                points={[gridStartX + i * scaledGridSize, gridStartY, gridStartX + i * scaledGridSize, gridEndY]}
+                stroke={colors.gridColor}
+                strokeWidth={1 / zoom}
                 listening={false}
               />
             ))}
-            {Array.from({ length: Math.ceil(dimensions.height / GRID_SIZE) + 1 }).map((_, i) => (
+            {Array.from({ length: Math.ceil((gridEndY - gridStartY) / scaledGridSize) + 1 }).map((_, i) => (
               <Line
                 key={`h-${i}`}
-                points={[0, i * GRID_SIZE, dimensions.width, i * GRID_SIZE]}
-                stroke="rgba(0,0,0,0.04)"
-                strokeWidth={1}
+                points={[gridStartX, gridStartY + i * scaledGridSize, gridEndX, gridStartY + i * scaledGridSize]}
+                stroke={colors.gridColor}
+                strokeWidth={1 / zoom}
                 listening={false}
               />
             ))}
@@ -291,6 +521,7 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
                 item={item}
                 isSelected={selectedIds.includes(item.id)}
                 isLocked={isLocked}
+                colors={colors}
                 onSelect={(e) => {
                   if (isLocked) return;
                   if (e.evt.shiftKey) setSelectedIds(prev => prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]);
@@ -315,7 +546,7 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
               height={selectionRect.height}
               fill="rgba(255, 102, 0, 0.08)"
               stroke="#ff6600"
-              strokeWidth={1.5}
+              strokeWidth={1.5 / zoom}
               dash={[6, 4]}
               cornerRadius={4}
               listening={false}
@@ -349,19 +580,19 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
 }
 
 /* --- Shapes & Renderers --- */
-/* Optimized for LIGHT MODE with soft shadows and clean design */
+/* Theme-aware with configurable colors */
 
-const BathShape = ({ width, height }) => (
+const BathShape = ({ width, height, colors }) => (
   <Group>
     {/* Clean White Ceramic with soft shadow */}
     <Rect
       width={width}
       height={height}
-      fill="#ffffff"
-      stroke="#e2e8f0"
+      fill={colors.shapeFill}
+      stroke={colors.shapeStroke}
       strokeWidth={2}
       cornerRadius={10}
-      shadowColor="rgba(0,0,0,0.1)"
+      shadowColor={colors.shapeShadow}
       shadowBlur={15}
       shadowOffsetY={4}
     />
@@ -370,31 +601,31 @@ const BathShape = ({ width, height }) => (
       y={10}
       width={width - 20}
       height={height - 20}
-      fill="#f8fafc"
-      stroke="#e2e8f0"
+      fill={colors.innerFill}
+      stroke={colors.shapeStroke}
       strokeWidth={1}
       cornerRadius={6}
     />
-    <Ellipse x={width - 28} y={height / 2} radiusX={8} radiusY={8} fill="#cbd5e1" />
+    <Ellipse x={width - 28} y={height / 2} radiusX={8} radiusY={8} fill={colors.shapeStroke} />
     <Group x={14} y={height / 2}>
-      <Rect y={-8} width={10} height={4} fill="#94a3b8" cornerRadius={2} />
-      <Rect y={4} width={10} height={4} fill="#94a3b8" cornerRadius={2} />
+      <Rect y={-8} width={10} height={4} fill={colors.textColor} cornerRadius={2} />
+      <Rect y={4} width={10} height={4} fill={colors.textColor} cornerRadius={2} />
     </Group>
   </Group>
 );
 
-const ToiletShape = ({ width, height }) => (
+const ToiletShape = ({ width, height, colors }) => (
   <Group>
     <Rect
       x={width * 0.15}
       y={0}
       width={width * 0.7}
       height={height * 0.3}
-      fill="#ffffff"
-      stroke="#e2e8f0"
+      fill={colors.shapeFill}
+      stroke={colors.shapeStroke}
       strokeWidth={2}
       cornerRadius={4}
-      shadowColor="rgba(0,0,0,0.08)"
+      shadowColor={colors.shapeShadow}
       shadowBlur={10}
       shadowOffsetY={2}
     />
@@ -403,10 +634,10 @@ const ToiletShape = ({ width, height }) => (
       y={height * 0.65}
       radiusX={width * 0.4}
       radiusY={height * 0.32}
-      fill="#ffffff"
-      stroke="#e2e8f0"
+      fill={colors.shapeFill}
+      stroke={colors.shapeStroke}
       strokeWidth={2}
-      shadowColor="rgba(0,0,0,0.08)"
+      shadowColor={colors.shapeShadow}
       shadowBlur={10}
       shadowOffsetY={2}
     />
@@ -415,23 +646,23 @@ const ToiletShape = ({ width, height }) => (
       y={height * 0.65}
       radiusX={width * 0.28}
       radiusY={height * 0.22}
-      fill="#f8fafc"
-      stroke="#e2e8f0"
+      fill={colors.innerFill}
+      stroke={colors.shapeStroke}
       strokeWidth={1}
     />
   </Group>
 );
 
-const ShowerShape = ({ width, height }) => (
+const ShowerShape = ({ width, height, colors }) => (
   <Group>
     <Rect
       width={width}
       height={height}
-      fill="#ffffff"
-      stroke="#e2e8f0"
+      fill={colors.shapeFill}
+      stroke={colors.shapeStroke}
       strokeWidth={2}
       cornerRadius={8}
-      shadowColor="rgba(0,0,0,0.1)"
+      shadowColor={colors.shapeShadow}
       shadowBlur={15}
       shadowOffsetY={4}
     />
@@ -440,27 +671,27 @@ const ShowerShape = ({ width, height }) => (
       y={6}
       width={width - 12}
       height={height - 12}
-      fill="#f0f9ff"
-      stroke="#bae6fd"
+      fill={colors.accentBlue}
+      stroke={colors.accentBlueBorder}
       strokeWidth={1}
       cornerRadius={4}
     />
-    <Line points={[0, 0, width, height]} stroke="#bae6fd" strokeWidth={1} opacity={0.5} />
-    <Line points={[width, 0, 0, height]} stroke="#bae6fd" strokeWidth={1} opacity={0.5} />
-    <Circle x={width / 2} y={height / 2} radius={10} fill="#ffffff" stroke="#cbd5e1" strokeWidth={2} />
+    <Line points={[0, 0, width, height]} stroke={colors.accentBlueBorder} strokeWidth={1} opacity={0.5} />
+    <Line points={[width, 0, 0, height]} stroke={colors.accentBlueBorder} strokeWidth={1} opacity={0.5} />
+    <Circle x={width / 2} y={height / 2} radius={10} fill={colors.shapeFill} stroke={colors.shapeStroke} strokeWidth={2} />
   </Group>
 );
 
-const SinkShape = ({ width, height }) => (
+const SinkShape = ({ width, height, colors }) => (
   <Group>
     <Rect
       width={width}
       height={height}
-      fill="#ffffff"
-      stroke="#e2e8f0"
+      fill={colors.shapeFill}
+      stroke={colors.shapeStroke}
       strokeWidth={2}
       cornerRadius={8}
-      shadowColor="rgba(0,0,0,0.08)"
+      shadowColor={colors.shapeShadow}
       shadowBlur={12}
       shadowOffsetY={3}
     />
@@ -469,12 +700,12 @@ const SinkShape = ({ width, height }) => (
       y={height / 2 + 5}
       radiusX={width * 0.35}
       radiusY={height * 0.28}
-      fill="#f8fafc"
-      stroke="#e2e8f0"
+      fill={colors.innerFill}
+      stroke={colors.shapeStroke}
       strokeWidth={1}
     />
-    <Circle x={width / 2} y={height / 2 + 5} radius={5} fill="#cbd5e1" />
-    <Rect x={width / 2 - 4} y={2} width={8} height={12} fill="#94a3b8" cornerRadius={2} />
+    <Circle x={width / 2} y={height / 2 + 5} radius={5} fill={colors.shapeStroke} />
+    <Rect x={width / 2 - 4} y={2} width={8} height={12} fill={colors.textColor} cornerRadius={2} />
   </Group>
 );
 
@@ -484,7 +715,7 @@ const getLShapePoints = (width, height) => {
   return [0, 0, width, 0, width, height - cutHeight, width - cutWidth, height - cutHeight, width - cutWidth, height, 0, height];
 };
 
-const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDragMove, onDragEnd, onChange }) => {
+const DraggableItem = ({ item, isSelected, isLocked, colors, onSelect, onDragStart, onDragMove, onDragEnd, onChange }) => {
   const shapeRef = useRef();
   const trRef = useRef();
 
@@ -501,16 +732,16 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
   const heightMm = pxToMm(item.height);
 
   const renderShape = () => {
-    if (item.type === 'bath') return <BathShape width={item.width} height={item.height} />;
-    if (item.type === 'toilet') return <ToiletShape width={item.width} height={item.height} />;
-    if (item.type === 'shower') return <ShowerShape width={item.width} height={item.height} />;
-    if (item.type === 'sink') return <SinkShape width={item.width} height={item.height} />;
+    if (item.type === 'bath') return <BathShape width={item.width} height={item.height} colors={colors} />;
+    if (item.type === 'toilet') return <ToiletShape width={item.width} height={item.height} colors={colors} />;
+    if (item.type === 'shower') return <ShowerShape width={item.width} height={item.height} colors={colors} />;
+    if (item.type === 'sink') return <SinkShape width={item.width} height={item.height} colors={colors} />;
     if (item.type === 'radiator') return (
       <Group>
         <Rect
           width={item.width}
           height={item.height}
-          fill="#ffffff"
+          fill={colors.shapeFill}
           stroke="#f59e0b"
           strokeWidth={2}
           cornerRadius={3}
@@ -535,7 +766,7 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
         <Rect
           width={item.width}
           height={item.height}
-          fill="#ffffff"
+          fill={colors.shapeFill}
           stroke="#8b5cf6"
           strokeWidth={2}
           cornerRadius={4}
@@ -545,11 +776,11 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
         />
         <Line
           points={[item.width * 0.5, 4, item.width * 0.5, item.height - 4]}
-          stroke="#e2e8f0"
+          stroke={colors.shapeStroke}
           strokeWidth={1}
         />
-        <Circle x={item.width * 0.35} y={item.height / 2} radius={3} fill="#cbd5e1" />
-        <Circle x={item.width * 0.65} y={item.height / 2} radius={3} fill="#cbd5e1" />
+        <Circle x={item.width * 0.35} y={item.height / 2} radius={3} fill={colors.shapeStroke} />
+        <Circle x={item.width * 0.65} y={item.height / 2} radius={3} fill={colors.shapeStroke} />
         <Text
           text="CUPBOARD"
           x={0}
@@ -572,7 +803,7 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
           angle={90}
           rotation={-90}
           fill="rgba(255,102,0,0.05)"
-          stroke="#94a3b8"
+          stroke={colors.textColor}
           strokeWidth={1}
           dash={[4, 4]}
         />
@@ -580,12 +811,12 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
           y={item.height - 5}
           width={item.width}
           height={6}
-          fill="#ffffff"
-          stroke="#64748b"
+          fill={colors.shapeFill}
+          stroke={colors.textColor}
           strokeWidth={2}
           rotation={-45}
           cornerRadius={2}
-          shadowColor="rgba(0,0,0,0.1)"
+          shadowColor={colors.shapeShadow}
           shadowBlur={5}
           shadowOffsetY={2}
         />
@@ -596,8 +827,8 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
         <Rect
           width={item.width}
           height={item.height}
-          fill="#bae6fd"
-          stroke="#7dd3fc"
+          fill={colors.accentBlue}
+          stroke={colors.accentBlueBorder}
           strokeWidth={2}
           cornerRadius={2}
           shadowColor="rgba(14,165,233,0.3)"
@@ -622,7 +853,7 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
         y={item.height / 2}
         radius={item.width / 2}
         fill="transparent"
-        stroke="#64748b"
+        stroke={colors.textColor}
         strokeWidth={2}
         dash={[6, 4]}
       />
@@ -668,10 +899,10 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
             <Line
               points={getLShapePoints(item.width, item.height)}
               closed
-              fill="rgba(248, 250, 252, 0.8)"
-              stroke={isSelected ? '#ff6600' : '#94a3b8'}
+              fill={colors.innerFill}
+              stroke={isSelected ? '#ff6600' : colors.textColor}
               strokeWidth={isSelected ? 3 : 2}
-              shadowColor="rgba(0,0,0,0.1)"
+              shadowColor={colors.shapeShadow}
               shadowBlur={20}
               shadowOffsetY={4}
               cornerRadius={4}
@@ -681,11 +912,11 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
             <Rect
               width={item.width}
               height={item.height}
-              fill="rgba(248, 250, 252, 0.8)"
-              stroke={isSelected ? '#ff6600' : '#94a3b8'}
+              fill={colors.innerFill}
+              stroke={isSelected ? '#ff6600' : colors.textColor}
               strokeWidth={isSelected ? 3 : 2}
               cornerRadius={4}
-              shadowColor="rgba(0,0,0,0.1)"
+              shadowColor={colors.shapeShadow}
               shadowBlur={20}
               shadowOffsetY={4}
             />
@@ -703,7 +934,7 @@ const DraggableItem = ({ item, isSelected, isLocked, onSelect, onDragStart, onDr
             align="center"
             fontSize={11}
             fontFamily="Plus Jakarta Sans, system-ui, sans-serif"
-            fill="#64748b"
+            fill={colors.textColor}
           />
         )}
 
