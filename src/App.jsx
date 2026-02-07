@@ -121,7 +121,7 @@ function App() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden font-sans">
+    <div className="flex h-screen w-full flex-col overflow-hidden font-sans">
       {/* Decorative Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[var(--primary)] opacity-[0.03] rounded-full blur-3xl" />
@@ -138,7 +138,7 @@ function App() {
           justifyContent: 'center',
           alignItems: 'center',
           borderRight: '1px solid var(--border-color)', // match sidebar border
-          marginLeft: '-16px', // offset parent padding (px-4 = 16px)
+          marginLeft: '-8px', // offset parent padding (px-4 = 16px). -8px gives 8px visual padding.
           marginRight: '16px',
         }}>
           <img
