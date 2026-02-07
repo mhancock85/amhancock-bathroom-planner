@@ -130,28 +130,31 @@ function App() {
 
       {/* Header - Glassmorphism */}
       <header className="glass h-16 border-b border-white/20 flex items-center px-4 sm:px-6 justify-between z-20 relative">
-        {/* Left Section - Logo Only */}
-        <div className="flex items-center gap-3">
-          {/* Small Logo - with theme-aware background */}
+        {/* Left Section - Logo centred in sidebar area */}
+        <div style={{ 
+          width: '220px', 
+          display: 'flex', 
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
           <img
             src={`${import.meta.env.BASE_URL}logo.png`}
             alt="AM Hancock & Son"
             style={{ 
-              height: '48px', 
+              height: '44px', 
               width: 'auto', 
               objectFit: 'contain',
-              // Add background for dark mode visibility
               ...(theme === 'dark' ? {
                 background: 'white',
-                padding: '6px 10px',
-                borderRadius: '8px',
+                padding: '4px 8px',
+                borderRadius: '6px',
               } : {})
             }}
           />
         </div>
 
         {/* Center Section - Lock Room Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsRoomLocked(!isRoomLocked)}
             style={{
@@ -173,17 +176,12 @@ function App() {
             {isRoomLocked ? <Lock style={{ width: '14px', height: '14px' }} /> : <Unlock style={{ width: '14px', height: '14px' }} />}
             <span>{isRoomLocked ? 'Room Locked' : 'Lock Room'}</span>
           </button>
-          {/* Always-visible hint text */}
           <span style={{ 
-            fontSize: '11px', 
+            fontSize: '10px', 
             color: 'var(--text-muted)',
-            maxWidth: '180px',
-            lineHeight: '1.3',
+            fontStyle: 'italic',
           }}>
-            {isRoomLocked 
-              ? "Room locked — fixtures can still be moved" 
-              : "Lock to prevent accidental room moves"
-            }
+            {isRoomLocked ? '(fixtures still moveable)' : '(prevents room drag)'}
           </span>
         </div>
 
