@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { jsPDF } from 'jspdf'
 import { Sidebar } from './components/Sidebar'
 import { CanvasEditor } from './components/CanvasEditor'
 import { PropertiesPanel } from './components/PropertiesPanel'
@@ -10,6 +11,7 @@ function App() {
   const [history, setHistory] = useState([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [isRoomLocked, setIsRoomLocked] = useState(false)
+  const canvasRef = useRef(null)
   const [theme, setTheme] = useState(() => {
     // Check for saved preference or system preference
     if (typeof window !== 'undefined') {
@@ -118,6 +120,110 @@ function App() {
     };
     setItems((prev) => [...prev, newItem]);
     setSelectedIds([newItem.id]);
+  };
+
+  // PDF Export Function
+  const handleExportPdf = async () => {
+    if (!canvasRef.current) {
+      alert('Canvas not ready');
+      return;
+    }
+
+    if (items.length === 0) {
+      alert('Please add some items to your bathroom plan before exporting.');
+      return;
+    }
+
+    try {
+      // Get the stage image from canvas
+      const imageData = await canvasRef.current.getStageImage();
+      if (!imageData) {
+        alert('Failed to capture bathroom plan.');
+        return;
+      }
+
+      // Create PDF (A4 size)
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+
+      // Header - AM Hancock branding
+      pdf.setFillColor(255, 102, 0); // #ff6600
+      pdf.rect(0, 0, pageWidth, 25, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('AM Hancock & Son', margin, 16);
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Bathroom Layout Plan', pageWidth - margin, 16, { align: 'right' });
+
+      // Date
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFontSize(9);
+      const date = new Date().toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+      pdf.text(`Generated: ${date}`, margin, 35);
+
+      // Calculate image dimensions to fit on page
+      const availableWidth = pageWidth - (margin * 2);
+      const availableHeight = pageHeight - 80; // Leave space for header and footer
+      
+      const imgAspectRatio = imageData.width / imageData.height;
+      let imgWidth = availableWidth;
+      let imgHeight = imgWidth / imgAspectRatio;
+      
+      if (imgHeight > availableHeight) {
+        imgHeight = availableHeight;
+        imgWidth = imgHeight * imgAspectRatio;
+      }
+
+      // Center the image horizontally
+      const imgX = (pageWidth - imgWidth) / 2;
+      const imgY = 45;
+
+      // Add white background for image area
+      pdf.setFillColor(248, 249, 252);
+      pdf.rect(margin, imgY - 5, pageWidth - (margin * 2), imgHeight + 10, 'F');
+
+      // Add the bathroom plan image
+      pdf.addImage(imageData.dataURL, 'PNG', imgX, imgY, imgWidth, imgHeight);
+
+      // Add border around image
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.5);
+      pdf.rect(imgX - 2, imgY - 2, imgWidth + 4, imgHeight + 4);
+
+      // Footer
+      const footerY = pageHeight - 15;
+      pdf.setDrawColor(255, 102, 0);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+      
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFontSize(8);
+      pdf.text('AM Hancock & Son - Quality Bathroom Installations', margin, footerY);
+      pdf.text('www.amhancock.co.uk', pageWidth - margin, footerY, { align: 'right' });
+
+      // Download the PDF
+      const filename = `bathroom-plan-${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(filename);
+
+    } catch (error) {
+      console.error('PDF export error:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
   };
 
   return (
@@ -246,10 +352,11 @@ function App() {
           {/* Export Button - Primary CTA */}
           <button
             className="btn-primary flex items-center gap-2 ml-1 sm:ml-2"
-            onClick={() => alert('Exporting design... (Simulated)')}
+            onClick={handleExportPdf}
+            disabled={items.length === 0}
           >
             <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Export</span>
+            <span className="hidden sm:inline">Export PDF</span>
           </button>
         </div>
       </header>
@@ -258,6 +365,7 @@ function App() {
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar selectedIds={selectedIds} onDelete={handleDelete} onAdd={handleAddItem} theme={theme} />
         <CanvasEditor
+          ref={canvasRef}
           items={items}
           setItems={setItems}
           selectedIds={selectedIds}

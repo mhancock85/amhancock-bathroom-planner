@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Stage, Layer, Rect, Transformer, Group, Text, Line, Ellipse, Arc, Circle } from 'react-konva';
 import { MousePointer2, Move, ZoomIn, ZoomOut, Maximize, RotateCcw } from 'lucide-react';
 
@@ -10,7 +10,7 @@ const ZOOM_STEP = 0.25;
 
 const pxToMm = (px) => Math.round(px / PIXELS_PER_MM);
 
-export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pushHistory, isRoomLocked, theme }) {
+export const CanvasEditor = forwardRef(function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pushHistory, isRoomLocked, theme }, ref) {
   const stageRef = useRef(null);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -28,6 +28,66 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
   // Panning state (spacebar + drag)
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0 });
+
+  // Expose methods for PDF export
+  useImperativeHandle(ref, () => ({
+    getStageImage: () => {
+      const stage = stageRef.current;
+      if (!stage) return null;
+      
+      // Deselect all to hide transformers for clean export
+      setSelectedIds([]);
+      
+      // Wait a tick for the deselection to render
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // Get the bounding box of all content
+          if (items.length === 0) {
+            resolve(null);
+            return;
+          }
+
+          // Calculate bounds of all items
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          items.forEach(item => {
+            const rotation = (item.rotation || 0) * Math.PI / 180;
+            const cos = Math.abs(Math.cos(rotation));
+            const sin = Math.abs(Math.sin(rotation));
+            const rotatedWidth = item.width * cos + item.height * sin;
+            const rotatedHeight = item.width * sin + item.height * cos;
+            const centerX = item.x + item.width / 2;
+            const centerY = item.y + item.height / 2;
+            minX = Math.min(minX, centerX - rotatedWidth / 2);
+            minY = Math.min(minY, centerY - rotatedHeight / 2);
+            maxX = Math.max(maxX, centerX + rotatedWidth / 2);
+            maxY = Math.max(maxY, centerY + rotatedHeight / 2);
+          });
+
+          const padding = 40;
+          const exportWidth = maxX - minX + padding * 2;
+          const exportHeight = maxY - minY + padding * 2;
+
+          // Export the stage with white background
+          const dataURL = stage.toDataURL({
+            x: minX - padding,
+            y: minY - padding,
+            width: exportWidth,
+            height: exportHeight,
+            pixelRatio: 2, // Higher quality
+            mimeType: 'image/png',
+          });
+
+          resolve({
+            dataURL,
+            width: exportWidth,
+            height: exportHeight,
+          });
+        }, 100);
+      });
+    },
+    getItems: () => items,
+    getDimensions: () => dimensions,
+  }));
 
   // Fixed light colors for fixtures (realistic - fixtures are always white)
   // Room and grid adapt to theme
@@ -675,7 +735,7 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
       )}
     </div>
   );
-}
+});
 
 /* --- Shapes & Renderers --- */
 /* Theme-aware with configurable colors */
