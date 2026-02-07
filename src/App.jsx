@@ -142,7 +142,7 @@ function App() {
           marginRight: '16px',
         }}>
           <img
-            src={`${import.meta.env.BASE_URL}logo-black-wide.png`}
+            src={`${import.meta.env.BASE_URL}logo.png`}
             alt="AM Hancock & Son"
             style={{ 
               height: '100%', 
