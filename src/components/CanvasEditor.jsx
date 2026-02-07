@@ -205,29 +205,59 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
       return;
     }
 
-    // Calculate bounding box of all items
+    // Calculate bounding box of all items (accounting for rotation)
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
     items.forEach(item => {
-      minX = Math.min(minX, item.x);
-      minY = Math.min(minY, item.y);
-      maxX = Math.max(maxX, item.x + item.width);
-      maxY = Math.max(maxY, item.y + item.height);
+      const rotation = (item.rotation || 0) * Math.PI / 180;
+      const cos = Math.abs(Math.cos(rotation));
+      const sin = Math.abs(Math.sin(rotation));
+      
+      // Calculate rotated bounding box size
+      const rotatedWidth = item.width * cos + item.height * sin;
+      const rotatedHeight = item.width * sin + item.height * cos;
+      
+      // Center of the item
+      const centerX = item.x + item.width / 2;
+      const centerY = item.y + item.height / 2;
+      
+      // Bounding box of rotated item
+      const itemMinX = centerX - rotatedWidth / 2;
+      const itemMinY = centerY - rotatedHeight / 2;
+      const itemMaxX = centerX + rotatedWidth / 2;
+      const itemMaxY = centerY + rotatedHeight / 2;
+      
+      minX = Math.min(minX, itemMinX);
+      minY = Math.min(minY, itemMinY);
+      maxX = Math.max(maxX, itemMaxX);
+      maxY = Math.max(maxY, itemMaxY);
     });
 
     const contentWidth = maxX - minX;
     const contentHeight = maxY - minY;
-    const padding = 80; // Padding around content
+    const padding = 60; // Padding around content
 
-    // Calculate zoom to fit
-    const scaleX = (dimensions.width - padding * 2) / contentWidth;
-    const scaleY = (dimensions.height - padding * 2) / contentHeight;
-    const newZoom = Math.min(Math.max(MIN_ZOOM, Math.min(scaleX, scaleY)), MAX_ZOOM);
+    // Calculate zoom to fit (use smaller scale to ensure everything fits)
+    const availableWidth = dimensions.width - padding * 2;
+    const availableHeight = dimensions.height - padding * 2;
+    
+    const scaleX = availableWidth / contentWidth;
+    const scaleY = availableHeight / contentHeight;
+    let newZoom = Math.min(scaleX, scaleY);
+    
+    // Clamp to zoom limits
+    newZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
 
-    // Calculate position to center content
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    const newPosX = dimensions.width / 2 - centerX * newZoom;
-    const newPosY = dimensions.height / 2 - centerY * newZoom;
+    // Calculate center of content
+    const contentCenterX = (minX + maxX) / 2;
+    const contentCenterY = (minY + maxY) / 2;
+    
+    // Calculate position to center content in viewport
+    const viewportCenterX = dimensions.width / 2;
+    const viewportCenterY = dimensions.height / 2;
+    
+    const newPosX = viewportCenterX - contentCenterX * newZoom;
+    const newPosY = viewportCenterY - contentCenterY * newZoom;
 
     setZoom(newZoom);
     setStagePos({ x: newPosX, y: newPosY });
