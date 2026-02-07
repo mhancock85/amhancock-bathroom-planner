@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { X, RotateCw } from 'lucide-react';
 
+// Conversion constant - must match CanvasEditor
+const PIXELS_PER_MM = 0.5;
+const pxToMm = (px) => Math.round(px / PIXELS_PER_MM);
+const mmToPx = (mm) => mm * PIXELS_PER_MM;
+
 export function PropertiesPanel({ selectedItem, onUpdate, onClose }) {
-  const [width, setWidth] = useState('');
-  const [height, setHeight] = useState('');
+  const [widthMm, setWidthMm] = useState('');
+  const [heightMm, setHeightMm] = useState('');
   const [rotation, setRotation] = useState('');
 
-  // Sync local state when selected item changes
+  // Sync local state when selected item changes (convert px to mm for display)
   useEffect(() => {
     if (selectedItem) {
-      setWidth(Math.round(selectedItem.width).toString());
-      setHeight(Math.round(selectedItem.height).toString());
+      setWidthMm(pxToMm(selectedItem.width).toString());
+      setHeightMm(pxToMm(selectedItem.height).toString());
       setRotation(Math.round(selectedItem.rotation || 0).toString());
     }
   }, [selectedItem?.id, selectedItem?.width, selectedItem?.height, selectedItem?.rotation]);
@@ -18,14 +23,15 @@ export function PropertiesPanel({ selectedItem, onUpdate, onClose }) {
   if (!selectedItem) return null;
 
   const handleApply = () => {
-    const newWidth = parseInt(width) || selectedItem.width;
-    const newHeight = parseInt(height) || selectedItem.height;
+    // Convert mm input back to pixels for storage
+    const newWidthPx = mmToPx(parseInt(widthMm) || pxToMm(selectedItem.width));
+    const newHeightPx = mmToPx(parseInt(heightMm) || pxToMm(selectedItem.height));
     const newRotation = parseInt(rotation) || 0;
     
     onUpdate({
       ...selectedItem,
-      width: Math.max(10, newWidth),
-      height: Math.max(10, newHeight),
+      width: Math.max(5, newWidthPx),  // Min 10mm = 5px
+      height: Math.max(5, newHeightPx),
       rotation: newRotation % 360,
     });
   };
@@ -125,8 +131,8 @@ export function PropertiesPanel({ selectedItem, onUpdate, onClose }) {
         <label style={labelStyle}>Width (mm)</label>
         <input
           type="number"
-          value={width}
-          onChange={(e) => setWidth(e.target.value)}
+          value={widthMm}
+          onChange={(e) => setWidthMm(e.target.value)}
           onBlur={handleApply}
           onKeyDown={handleKeyDown}
           style={inputStyle}
@@ -142,8 +148,8 @@ export function PropertiesPanel({ selectedItem, onUpdate, onClose }) {
         </label>
         <input
           type="number"
-          value={height}
-          onChange={(e) => setHeight(e.target.value)}
+          value={heightMm}
+          onChange={(e) => setHeightMm(e.target.value)}
           onBlur={handleApply}
           onKeyDown={handleKeyDown}
           style={inputStyle}
@@ -190,22 +196,26 @@ export function PropertiesPanel({ selectedItem, onUpdate, onClose }) {
         </div>
       </div>
 
-      {/* Quick Sizes for Rooms */}
+      {/* Quick Sizes for Rooms (values in mm, converted to px on apply) */}
       {isRoom && (
         <div>
           <label style={labelStyle}>Quick Sizes</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {[
-              { label: 'Small (2m × 1.5m)', w: 200, h: 150 },
-              { label: 'Medium (2.5m × 2m)', w: 250, h: 200 },
-              { label: 'Large (3m × 2.5m)', w: 300, h: 250 },
+              { label: 'Small (2m × 1.5m)', wMm: 2000, hMm: 1500 },
+              { label: 'Medium (2.5m × 2m)', wMm: 2500, hMm: 2000 },
+              { label: 'Large (3m × 2.5m)', wMm: 3000, hMm: 2500 },
             ].map((size) => (
               <button
                 key={size.label}
                 onClick={() => {
-                  setWidth((size.w * 10).toString());
-                  setHeight((size.h * 10).toString());
-                  onUpdate({ ...selectedItem, width: size.w * 10, height: size.h * 10 });
+                  setWidthMm(size.wMm.toString());
+                  setHeightMm(size.hMm.toString());
+                  onUpdate({ 
+                    ...selectedItem, 
+                    width: mmToPx(size.wMm), 
+                    height: mmToPx(size.hMm) 
+                  });
                 }}
                 style={{
                   padding: '8px 10px',

@@ -102,11 +102,18 @@ function App() {
 
   const handleAddItem = (item) => {
     pushHistory();
+    // Calculate approximate center of visible canvas area
+    // Sidebar is ~260px, header is ~64px, so canvas starts around there
+    const canvasWidth = window.innerWidth - 260 - 200; // minus sidebar and potential properties panel
+    const canvasHeight = window.innerHeight - 64; // minus header
+    const centerX = 260 + (canvasWidth / 2) - (item.width / 2);
+    const centerY = 64 + (canvasHeight / 2) - (item.height / 2);
+    
     const newItem = {
       ...item,
       id: crypto.randomUUID(),
-      x: 300,
-      y: 300,
+      x: Math.max(50, centerX - 260), // Convert to canvas coordinates (remove sidebar offset)
+      y: Math.max(50, centerY - 64),  // Convert to canvas coordinates (remove header offset)
       rotation: 0,
     };
     setItems((prev) => [...prev, newItem]);
@@ -123,11 +130,11 @@ function App() {
 
       {/* Header - Glassmorphism */}
       <header className="glass h-16 border-b border-white/20 flex items-center px-4 sm:px-6 justify-between z-20 relative">
-        {/* Left Section - Logo & Brand */}
+        {/* Left Section - Logo Only */}
         <div className="flex items-center gap-3">
           {/* Small Logo - with theme-aware background */}
           <img
-            src="/logo.png"
+            src={`${import.meta.env.BASE_URL}logo.png`}
             alt="AM Hancock & Son"
             style={{ 
               height: '36px', 
@@ -141,16 +148,17 @@ function App() {
               } : {})
             }}
           />
+        </div>
 
-
-          {/* Lock Room Toggle - near logo */}
+        {/* Center Section - Lock Room Toggle */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsRoomLocked(!isRoomLocked)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '6px 14px',
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: 600,
@@ -161,12 +169,16 @@ function App() {
               border: isRoomLocked ? 'none' : '1px solid var(--border-item)',
               boxShadow: isRoomLocked ? '0 2px 8px rgba(255,102,0,0.3)' : 'var(--shadow-sm)',
             }}
-            title={isRoomLocked ? "Click to unlock rooms" : "Click to lock rooms in place"}
+            title={isRoomLocked 
+              ? "Room is locked - fixtures can still be moved. Click to unlock." 
+              : "Lock room position to prevent accidental moves while arranging fixtures."
+            }
           >
             {isRoomLocked ? <Lock style={{ width: '14px', height: '14px' }} /> : <Unlock style={{ width: '14px', height: '14px' }} />}
-            <span>Lock Room</span>
+            <span>{isRoomLocked ? 'Room Locked' : 'Lock Room'}</span>
           </button>
         </div>
+
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
