@@ -25,17 +25,20 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
   // Multi-drag state
   const dragStartPositions = useRef({});
 
-  // Theme-aware colors
+  // Fixed light colors for fixtures (realistic - fixtures are always white)
+  // Only grid adapts to theme for visibility
   const isDark = theme === 'dark';
   const colors = {
-    shapeFill: isDark ? '#252540' : '#ffffff',
-    shapeStroke: isDark ? '#3a3a5a' : '#e2e8f0',
-    shapeShadow: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.1)',
-    innerFill: isDark ? '#1e1e35' : '#f8fafc',
-    gridColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-    textColor: isDark ? '#a0a0b5' : '#64748b',
-    accentBlue: isDark ? '#60a5fa' : '#bae6fd',
-    accentBlueBorder: isDark ? '#3b82f6' : '#7dd3fc',
+    // Fixtures always light (like real bathroom fixtures)
+    shapeFill: '#ffffff',
+    shapeStroke: '#e2e8f0',
+    shapeShadow: 'rgba(0,0,0,0.1)',
+    innerFill: '#f8fafc',
+    textColor: '#64748b',
+    accentBlue: '#bae6fd',
+    accentBlueBorder: '#7dd3fc',
+    // Only grid adapts for visibility on dark canvas
+    gridColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
   };
 
   useEffect(() => {
