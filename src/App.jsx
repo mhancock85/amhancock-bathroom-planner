@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { CanvasEditor } from './components/CanvasEditor'
+import { PropertiesPanel } from './components/PropertiesPanel'
 import { Undo2, Redo2, Download, Trash2, Lock, Unlock, Upload, Sun, Moon } from 'lucide-react'
 
 function App() {
@@ -242,6 +243,19 @@ function App() {
           isRoomLocked={isRoomLocked}
           theme={theme}
         />
+        {/* Properties Panel - shows when single item selected */}
+        {selectedIds.length === 1 && (
+          <PropertiesPanel
+            selectedItem={items.find(item => item.id === selectedIds[0])}
+            onUpdate={(updatedItem) => {
+              pushHistory();
+              setItems(prev => prev.map(item => 
+                item.id === updatedItem.id ? updatedItem : item
+              ));
+            }}
+            onClose={() => setSelectedIds([])}
+          />
+        )}
       </div>
     </div>
   )
