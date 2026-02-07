@@ -121,7 +121,6 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
     }
 
     const name = shape.name() || '';
-    const className = shape.getClassName();
 
     // Transformer anchors
     if (name.includes('_anchor')) {
