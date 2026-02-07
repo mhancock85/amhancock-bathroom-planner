@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: '/amhancock-bathroom-planner/',
   server: {
     host: true, // Listen on all addresses, including LAN and public addresses
     port: 5173,
