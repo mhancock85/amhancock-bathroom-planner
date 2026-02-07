@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { CanvasEditor } from './components/CanvasEditor'
 import { PropertiesPanel } from './components/PropertiesPanel'
-import { Undo2, Redo2, Download, Trash2, Lock, Unlock, Upload, Sun, Moon } from 'lucide-react'
+import { Undo2, Redo2, Download, Trash2, Lock, Unlock, Upload, Sun, Moon, HelpCircle } from 'lucide-react'
 
 function App() {
   const [items, setItems] = useState([])
@@ -137,14 +137,14 @@ function App() {
             src={`${import.meta.env.BASE_URL}logo.png`}
             alt="AM Hancock & Son"
             style={{ 
-              height: '36px', 
+              height: '48px', 
               width: 'auto', 
               objectFit: 'contain',
               // Add background for dark mode visibility
               ...(theme === 'dark' ? {
                 background: 'white',
-                padding: '4px 8px',
-                borderRadius: '6px',
+                padding: '6px 10px',
+                borderRadius: '8px',
               } : {})
             }}
           />
@@ -177,6 +177,21 @@ function App() {
             {isRoomLocked ? <Lock style={{ width: '14px', height: '14px' }} /> : <Unlock style={{ width: '14px', height: '14px' }} />}
             <span>{isRoomLocked ? 'Room Locked' : 'Lock Room'}</span>
           </button>
+          {/* Info icon with tooltip */}
+          <div 
+            style={{ position: 'relative', display: 'inline-flex' }}
+            title={isRoomLocked 
+              ? "Room is locked - fixtures can still be moved. Click button to unlock." 
+              : "Lock room in place to prevent accidental moves while arranging fixtures."
+            }
+          >
+            <HelpCircle style={{ 
+              width: '16px', 
+              height: '16px', 
+              color: 'var(--text-muted)',
+              cursor: 'help',
+            }} />
+          </div>
         </div>
 
 

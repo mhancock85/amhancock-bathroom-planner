@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bath, Droplet, Square, CornerDownRight, Heater, DoorOpen, Trash2, ShowerHead, ScanFace, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bath, Droplet, Square, CornerDownRight, Heater, DoorOpen, Trash2, ShowerHead, ScanFace, ChevronDown, ChevronUp, Pipette } from 'lucide-react';
 
 // Simple toilet icon since lucide doesn't have one
 const ToiletIcon = ({ style }) => (
@@ -17,6 +17,7 @@ const ROOM_ITEMS = [
 
 const FIXTURE_ITEMS = [
   { type: 'bath', label: 'Bath', icon: Bath, width: 200, height: 90 },
+  { type: 'bath-taps', label: 'Bath Taps', icon: Pipette, width: 30, height: 15 },
   { type: 'shower', label: 'Shower', icon: Droplet, width: 120, height: 120 },
   { type: 'toilet', label: 'Toilet', icon: ToiletIcon, width: 65, height: 85 },
   { type: 'sink', label: 'Basin', icon: Droplet, width: 80, height: 65 },

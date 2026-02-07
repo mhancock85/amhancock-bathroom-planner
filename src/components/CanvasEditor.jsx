@@ -956,6 +956,51 @@ const DraggableItem = ({ item, isSelected, isLocked, colors, onSelect, onDragSta
         dash={[6, 4]}
       />
     );
+    if (item.type === 'bath-taps') return (
+      <Group>
+        {/* Mounting bar */}
+        <Rect
+          width={item.width}
+          height={item.height}
+          fill={colors.shapeFill}
+          stroke="#94a3b8"
+          strokeWidth={2}
+          cornerRadius={3}
+          shadowColor={colors.shapeShadow}
+          shadowBlur={4}
+          shadowOffsetY={1}
+        />
+        {/* Hot tap (left) */}
+        <Circle
+          x={item.width * 0.25}
+          y={item.height / 2}
+          radius={4}
+          fill="#ef4444"
+          stroke="#dc2626"
+          strokeWidth={1}
+        />
+        {/* Cold tap (right) */}
+        <Circle
+          x={item.width * 0.75}
+          y={item.height / 2}
+          radius={4}
+          fill="#3b82f6"
+          stroke="#2563eb"
+          strokeWidth={1}
+        />
+        {/* Label */}
+        <Text
+          text="TAPS"
+          x={0}
+          y={-12}
+          width={item.width}
+          align="center"
+          fontSize={8}
+          fontStyle="bold"
+          fill={colors.textColor}
+        />
+      </Group>
+    );
     return null;
   }
 
