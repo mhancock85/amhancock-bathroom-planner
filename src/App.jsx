@@ -141,12 +141,12 @@ function App() {
             src={`${import.meta.env.BASE_URL}logo.png`}
             alt="AM Hancock & Son"
             style={{ 
-              height: '44px', 
-              width: 'auto', 
+              width: '180px', 
+              height: 'auto', 
               objectFit: 'contain',
               ...(theme === 'dark' ? {
                 background: 'white',
-                padding: '4px 8px',
+                padding: '6px 10px',
                 borderRadius: '6px',
               } : {})
             }}
