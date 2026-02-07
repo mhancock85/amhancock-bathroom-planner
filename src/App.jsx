@@ -121,7 +121,7 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden font-sans">
+    <div className="flex h-full w-full flex-col overflow-hidden font-sans">
       {/* Decorative Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[var(--primary)] opacity-[0.03] rounded-full blur-3xl" />
