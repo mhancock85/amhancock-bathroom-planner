@@ -130,25 +130,30 @@ function App() {
 
       {/* Header - Glassmorphism */}
       <header className="glass h-16 border-b border-white/20 flex items-center px-4 sm:px-6 justify-between z-20 relative">
-        {/* Left Section - Logo centred in sidebar area */}
+        {/* Left Section - Logo centred in sidebar area (260px) */}
         <div style={{ 
-          width: '220px', 
+          width: '260px', 
+          height: '64px',
           display: 'flex', 
           justifyContent: 'center',
           alignItems: 'center',
+          borderRight: '1px solid var(--border-color)', // match sidebar border
+          marginLeft: '-16px', // offset parent padding (px-4 = 16px)
+          marginRight: '16px',
         }}>
           <img
-            src={`${import.meta.env.BASE_URL}logo.png`}
+            src={`${import.meta.env.BASE_URL}logo-black-wide.png`}
             alt="AM Hancock & Son"
             style={{ 
-              width: '180px', 
-              height: 'auto', 
-              objectFit: 'contain',
-              ...(theme === 'dark' ? {
-                background: 'white',
-                padding: '6px 10px',
-                borderRadius: '6px',
-              } : {})
+              height: '100%', 
+              width: '100%', 
+              objectFit: 'cover',
+              objectPosition: 'center',
+              // Dark Mode: Screen blends black BG away, white text remains
+              // Light Mode: Invert turns black BG->white (transparent in multiply), white text->black. Hue-rotate fixes orange.
+              mixBlendMode: theme === 'light' ? 'multiply' : 'screen',
+              filter: theme === 'light' ? 'invert(1) hue-rotate(180deg)' : 'none',
+              transition: 'all 0.3s ease',
             }}
           />
         </div>
