@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { CanvasEditor } from './components/CanvasEditor'
-import { Undo2, Download, Trash2, Lock, Unlock, Upload, Sun, Moon } from 'lucide-react'
+import { Undo2, Redo2, Download, Trash2, Lock, Unlock, Upload, Sun, Moon } from 'lucide-react'
 
 function App() {
   const [items, setItems] = useState([])
@@ -47,12 +47,26 @@ function App() {
     }
   }, [history, historyIndex]);
 
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const nextState = JSON.parse(history[historyIndex + 1]);
+      setItems(nextState);
+      setHistoryIndex(prev => prev + 1);
+      setSelectedIds([]);
+    }
+  }, [history, historyIndex]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Undo: Cmd+Z / Ctrl+Z
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         handleUndo();
+      }
+      // Redo: Cmd+Shift+Z / Ctrl+Shift+Z or Cmd+Y / Ctrl+Y
+      if ((e.metaKey || e.ctrlKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+        e.preventDefault();
+        handleRedo();
       }
       // Delete: Delete or Backspace key
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.length > 0) {
@@ -67,7 +81,7 @@ function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, selectedIds, pushHistory]);
+  }, [handleUndo, handleRedo, selectedIds, pushHistory]);
 
   const handleDelete = () => {
     if (selectedIds.length > 0) {
@@ -127,24 +141,6 @@ function App() {
             }}
           />
 
-          {/* Divider */}
-          <div className="hidden sm:block h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
-
-          {/* Element Count Badge - styled better */}
-          {items.length > 0 && (
-            <div style={{
-              padding: '6px 14px',
-              background: 'var(--bg-item)',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-item)',
-              boxShadow: 'var(--shadow-sm)',
-            }}>
-              {items.length} {items.length === 1 ? 'element' : 'elements'}
-            </div>
-          )}
 
           {/* Lock Room Toggle - near logo */}
           <button
@@ -198,9 +194,19 @@ function App() {
             onClick={handleUndo}
             disabled={historyIndex < 0}
             className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-black/5"
-            title="Undo (Cmd+Z)"
+            title="Undo (⌘Z)"
           >
             <Undo2 className="w-4.5 h-4.5" />
+          </button>
+
+          {/* Redo */}
+          <button
+            onClick={handleRedo}
+            disabled={historyIndex >= history.length - 1}
+            className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-black/5"
+            title="Redo (⌘⇧Z)"
+          >
+            <Redo2 className="w-4.5 h-4.5" />
           </button>
 
           {/* Clear */}
