@@ -151,7 +151,7 @@ function App() {
         </div>
 
         {/* Center Section - Lock Room Toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setIsRoomLocked(!isRoomLocked)}
             style={{
@@ -169,29 +169,22 @@ function App() {
               border: isRoomLocked ? 'none' : '1px solid var(--border-item)',
               boxShadow: isRoomLocked ? '0 2px 8px rgba(255,102,0,0.3)' : 'var(--shadow-sm)',
             }}
-            title={isRoomLocked 
-              ? "Room is locked - fixtures can still be moved. Click to unlock." 
-              : "Lock room position to prevent accidental moves while arranging fixtures."
-            }
           >
             {isRoomLocked ? <Lock style={{ width: '14px', height: '14px' }} /> : <Unlock style={{ width: '14px', height: '14px' }} />}
             <span>{isRoomLocked ? 'Room Locked' : 'Lock Room'}</span>
           </button>
-          {/* Info icon with tooltip */}
-          <div 
-            style={{ position: 'relative', display: 'inline-flex' }}
-            title={isRoomLocked 
-              ? "Room is locked - fixtures can still be moved. Click button to unlock." 
-              : "Lock room in place to prevent accidental moves while arranging fixtures."
+          {/* Always-visible hint text */}
+          <span style={{ 
+            fontSize: '11px', 
+            color: 'var(--text-muted)',
+            maxWidth: '180px',
+            lineHeight: '1.3',
+          }}>
+            {isRoomLocked 
+              ? "Room locked — fixtures can still be moved" 
+              : "Lock to prevent accidental room moves"
             }
-          >
-            <HelpCircle style={{ 
-              width: '16px', 
-              height: '16px', 
-              color: 'var(--text-muted)',
-              cursor: 'help',
-            }} />
-          </div>
+          </span>
         </div>
 
 
