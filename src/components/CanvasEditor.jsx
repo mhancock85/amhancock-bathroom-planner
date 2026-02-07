@@ -25,8 +25,12 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
   // Multi-drag state
   const dragStartPositions = useRef({});
 
+  // Panning state (spacebar + drag)
+  const [isPanning, setIsPanning] = useState(false);
+  const panStart = useRef({ x: 0, y: 0 });
+
   // Fixed light colors for fixtures (realistic - fixtures are always white)
-  // Only grid adapts to theme for visibility
+  // Room and grid adapt to theme
   const isDark = theme === 'dark';
   const colors = {
     // Fixtures always light (like real bathroom fixtures)
@@ -37,7 +41,10 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
     textColor: '#64748b',
     accentBlue: '#bae6fd',
     accentBlueBorder: '#7dd3fc',
-    // Only grid adapts for visibility on dark canvas
+    // Room fill adapts to theme (grey in dark mode = floor)
+    roomFill: isDark ? '#3a3a5a' : '#f8fafc',
+    roomStroke: isDark ? '#5a5a7a' : '#64748b',
+    // Grid adapts for visibility on dark canvas
     gridColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
   };
 
@@ -96,6 +103,64 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
   }, [zoom, stagePos]);
+
+  // Handle scrolling/panning when zoomed in (middle mouse or Shift+drag)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let isPanningLocal = false;
+    let lastPos = { x: 0, y: 0 };
+
+    const handleMouseDown = (e) => {
+      // Middle mouse button (button 1) or Shift+left click to pan
+      if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+        isPanningLocal = true;
+        lastPos = { x: e.clientX, y: e.clientY };
+        container.style.cursor = 'grabbing';
+        e.preventDefault();
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isPanningLocal) return;
+      const dx = e.clientX - lastPos.x;
+      const dy = e.clientY - lastPos.y;
+      lastPos = { x: e.clientX, y: e.clientY };
+      setStagePos(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+    };
+
+    const handleMouseUp = () => {
+      if (isPanningLocal) {
+        isPanningLocal = false;
+        container.style.cursor = '';
+      }
+    };
+
+    // Also allow regular scroll on canvas to pan (when not holding Ctrl/Cmd)
+    const handleScroll = (e) => {
+      if (e.ctrlKey || e.metaKey) return; // Let zoom handler deal with this
+      // Use scroll to pan
+      setStagePos(prev => ({
+        x: prev.x - e.deltaX,
+        y: prev.y - e.deltaY,
+      }));
+    };
+
+    container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseup', handleMouseUp);
+    container.addEventListener('mouseleave', handleMouseUp);
+    container.addEventListener('wheel', handleScroll, { passive: true });
+
+    return () => {
+      container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseup', handleMouseUp);
+      container.removeEventListener('mouseleave', handleMouseUp);
+      container.removeEventListener('wheel', handleScroll);
+    };
+  }, []);
 
   // Zoom controls
   const handleZoomIn = useCallback(() => {
@@ -473,7 +538,7 @@ export function CanvasEditor({ items, setItems, selectedIds, setSelectedIds, pus
           border: '1px solid var(--border-glass)',
         }}
       >
-        <span style={{ opacity: 0.7 }}>⌘/Ctrl + Scroll to zoom</span>
+        <span style={{ opacity: 0.7 }}>Scroll to pan • ⌘/Ctrl + Scroll to zoom</span>
       </div>
 
       <Stage
@@ -902,8 +967,8 @@ const DraggableItem = ({ item, isSelected, isLocked, colors, onSelect, onDragSta
             <Line
               points={getLShapePoints(item.width, item.height)}
               closed
-              fill={colors.innerFill}
-              stroke={isSelected ? '#ff6600' : colors.textColor}
+              fill={colors.roomFill}
+              stroke={isSelected ? '#ff6600' : colors.roomStroke}
               strokeWidth={isSelected ? 3 : 2}
               shadowColor={colors.shapeShadow}
               shadowBlur={20}
@@ -915,8 +980,8 @@ const DraggableItem = ({ item, isSelected, isLocked, colors, onSelect, onDragSta
             <Rect
               width={item.width}
               height={item.height}
-              fill={colors.innerFill}
-              stroke={isSelected ? '#ff6600' : colors.textColor}
+              fill={colors.roomFill}
+              stroke={isSelected ? '#ff6600' : colors.roomStroke}
               strokeWidth={isSelected ? 3 : 2}
               cornerRadius={4}
               shadowColor={colors.shapeShadow}

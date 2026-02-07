@@ -110,11 +110,21 @@ function App() {
       <header className="glass h-16 border-b border-white/20 flex items-center px-4 sm:px-6 justify-between z-20 relative">
         {/* Left Section - Logo & Brand */}
         <div className="flex items-center gap-3">
-          {/* Small Logo */}
+          {/* Small Logo - with theme-aware background */}
           <img
             src="/logo.png"
             alt="AM Hancock & Son"
-            style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+            style={{ 
+              height: '36px', 
+              width: 'auto', 
+              objectFit: 'contain',
+              // Add background for dark mode visibility
+              ...(theme === 'dark' ? {
+                background: 'white',
+                padding: '4px 8px',
+                borderRadius: '6px',
+              } : {})
+            }}
           />
 
           {/* Divider */}
