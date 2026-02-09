@@ -2,6 +2,8 @@
 
 Interactive bathroom layout planning tool for **AM Hancock & Son** customers. Drag and drop bathroom fixtures onto a customisable room layout to visualise your perfect bathroom design.
 
+**🌐 Live Demo:** [mhancock85.github.io/amhancock-bathroom-planner](https://mhancock85.github.io/amhancock-bathroom-planner)
+
 ![AM Hancock & Son](public/logo.png)
 
 ## ✨ Features
@@ -29,41 +31,42 @@ The app will open at [http://localhost:5173](http://localhost:5173)
 
 ## 📦 Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| [React](https://react.dev) | 19.x | UI Framework |
-| [Vite](https://vite.dev) | 7.x | Build Tool & Dev Server |
-| [Konva](https://konvajs.org) | 10.x | 2D Canvas Library |
-| [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling |
-| [Lucide React](https://lucide.dev) | - | Icons |
+| Technology                              | Version | Purpose                 |
+| --------------------------------------- | ------- | ----------------------- |
+| [React](https://react.dev)              | 19.x    | UI Framework            |
+| [Vite](https://vite.dev)                | 7.x     | Build Tool & Dev Server |
+| [Konva](https://konvajs.org)            | 10.x    | 2D Canvas Library       |
+| [Tailwind CSS](https://tailwindcss.com) | 4.x     | Styling                 |
+| [Lucide React](https://lucide.dev)      | -       | Icons                   |
 
 ## 🛠️ Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Build production bundle to `dist/` |
-| `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint to check code quality |
+| Command            | Description                              |
+| ------------------ | ---------------------------------------- |
+| `npm run dev`      | Start development server with hot reload |
+| `npm run build`    | Build production bundle to `dist/`       |
+| `npm run preview`  | Preview production build locally         |
+| `npm run lint`     | Run ESLint to check code quality         |
 
 ## 🌐 Deployment
 
-This project is configured for **Netlify** deployment:
+This project is deployed on **GitHub Pages** with automatic CI/CD:
 
+- **Live URL:** [mhancock85.github.io/amhancock-bathroom-planner](https://mhancock85.github.io/amhancock-bathroom-planner)
+- **Auto-deploy:** Pushes to `main` branch trigger automatic deployment via GitHub Actions
 - **Build Command:** `npm run build`
 - **Publish Directory:** `dist`
-- **Auto-deploy:** Pushes to `main` branch trigger automatic deployment
 
-### Manual Deploy
+### Local Preview
 
 ```bash
 npm run build
-# Upload the 'dist' folder to any static hosting
+npm run preview
 ```
 
 ## 📁 Project Structure
 
-```
+```text
 bathroom-planner/
 ├── public/
 │   ├── logo.png              # AM Hancock logo
@@ -82,13 +85,13 @@ bathroom-planner/
 
 ## 🎨 Brand Colours
 
-| Colour | Hex | Usage |
-|--------|-----|-------|
-| Primary (Orange) | `#ff6600` | Buttons, accents, selection |
-| Secondary (Blue) | `#005bab` | Fixture highlights |
-| Background | `#f8f9fc` | App background |
-| Text Primary | `#1a1a2e` | Headings, labels |
-| Text Secondary | `#64748b` | Descriptions, hints |
+| Colour            | Hex       | Usage                       |
+| ----------------- | --------- | --------------------------- |
+| Primary (Orange)  | `#ff6600` | Buttons, accents, selection |
+| Secondary (Blue)  | `#005bab` | Fixture highlights          |
+| Background        | `#f8f9fc` | App background              |
+| Text Primary      | `#1a1a2e` | Headings, labels            |
+| Text Secondary    | `#64748b` | Descriptions, hints         |
 
 ## 🤝 Contributing
 
