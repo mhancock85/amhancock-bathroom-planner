@@ -15,6 +15,9 @@
       rel="stylesheet"
     />
 
+    <!-- Walkthrough/DAP Styles -->
+    <link rel="stylesheet" href="/walkthrough.css" />
+
     <title>Bathroom Planner | AM Hancock & Son</title>
 
     <style>
@@ -25,10 +28,55 @@
         height: 100%;
         overscroll-behavior: none;
       }
+
+      /* AM Hancock branded walkthrough overrides */
+      :root {
+        --wt-colour-primary: #ff6600;
+        --wt-colour-primary-hover: #e55a00;
+        --wt-colour-bg: #ffffff;
+        --wt-colour-text: #1a1a2e;
+        --wt-colour-overlay: rgba(0, 0, 0, 0.7);
+        --wt-font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        --wt-radius: 16px;
+        --wt-tooltip-width: 340px;
+      }
+
+      /* Dark mode adjustments for walkthrough */
+      [data-theme="dark"] {
+        --wt-colour-bg: #1a1a2e;
+        --wt-colour-text: #f0f0f5;
+      }
+
+      /* Move the help button up to avoid covering properties panel hint text */
+      .wt-launcher {
+        bottom: 80px !important;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Walkthrough/DAP Library -->
+    <script src="/walkthrough.js"></script>
+    <script>
+      // Initialize walkthrough after React has hydrated
+      document.addEventListener('DOMContentLoaded', function() {
+        // Wait for React to render before initializing tours
+        setTimeout(function() {
+          if (typeof Walkthrough !== 'undefined') {
+            // Load tour configuration (relative path for subdirectory deployment)
+            Walkthrough.loadConfig('walkthroughs.json').then(function() {
+              // Create the help launcher (floating ? button)
+              Walkthrough.createLauncher();
+              console.log('[DAP] Walkthrough launcher initialized');
+            }).catch(function(err) {
+              console.error('[DAP] Failed to load walkthroughs:', err);
+            });
+          }
+        }, 1500); // Delay to ensure React components are mounted
+      });
+    </script>
   </body>
 </html>
+

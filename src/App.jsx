@@ -235,7 +235,7 @@ function App() {
       </div>
 
       {/* Header - Glassmorphism */}
-      <header className="glass h-16 border-b border-white/20 flex items-center px-4 sm:px-6 justify-between z-20 relative">
+      <header id="app-header" className="glass h-16 border-b border-white/20 flex items-center px-4 sm:px-6 justify-between z-20 relative">
         {/* Left Section - Logo centred in sidebar area (260px) */}
         <div style={{ 
           width: '260px', 
@@ -244,7 +244,7 @@ function App() {
           justifyContent: 'center',
           alignItems: 'center',
           borderRight: '1px solid var(--border-color)', // match sidebar border
-          marginLeft: '-8px', // offset parent padding (px-4 = 16px). -8px gives 8px visual padding.
+          marginLeft: '0px', // slight padding from left edge for breathing room
           marginRight: '16px',
         }}>
           <img
@@ -267,6 +267,7 @@ function App() {
         {/* Center Section - Lock Room Toggle */}
         <div className="flex items-center gap-2">
           <button
+            id="btn-lock-room"
             onClick={() => setIsRoomLocked(!isRoomLocked)}
             style={{
               display: 'flex',
@@ -302,6 +303,7 @@ function App() {
 
           {/* Theme Toggle */}
           <button
+            id="btn-theme"
             onClick={toggleTheme}
             className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 border border-transparent hover:border-black/5"
             title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
@@ -312,6 +314,7 @@ function App() {
 
           {/* Import Template */}
           <button
+            id="btn-import"
             className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 border border-transparent hover:border-black/5"
             title="Import Template (Coming Soon)"
             onClick={() => alert('Import Template feature coming soon!')}
@@ -321,6 +324,7 @@ function App() {
 
           {/* Undo */}
           <button
+            id="btn-undo"
             onClick={handleUndo}
             disabled={historyIndex < 0}
             className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-black/5"
@@ -331,6 +335,7 @@ function App() {
 
           {/* Redo */}
           <button
+            id="btn-redo"
             onClick={handleRedo}
             disabled={historyIndex >= history.length - 1}
             className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/60 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-black/5"
@@ -341,6 +346,7 @@ function App() {
 
           {/* Clear */}
           <button
+            id="btn-clear"
             onClick={handleClearAll}
             disabled={items.length === 0}
             className="p-2.5 text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-red-100"
@@ -351,6 +357,7 @@ function App() {
 
           {/* Export Button - Primary CTA */}
           <button
+            id="btn-export"
             className="btn-primary flex items-center gap-2 ml-1 sm:ml-2"
             onClick={handleExportPdf}
             disabled={items.length === 0}

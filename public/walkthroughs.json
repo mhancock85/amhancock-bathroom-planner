@@ -1,0 +1,133 @@
+{
+  "walkthroughs": {
+    "getting-started": {
+      "id": "getting-started",
+      "name": "Getting Started",
+      "description": "Learn how to create your first bathroom layout in under a minute.",
+      "version": 2,
+      "steps": [
+        {
+          "selector": "#sidebar",
+          "title": "Welcome! 👋",
+          "content": "This is your <strong>design toolkit</strong>. Here you'll find room shapes and bathroom fixtures to build your perfect layout.<br><br>Let's walk through the basics together!",
+          "position": "right"
+        },
+        {
+          "selector": "#room-item-room-square",
+          "title": "Add Your Room",
+          "content": "Click on <strong>Room</strong> to add a room to your canvas. This will be the foundation of your bathroom design.",
+          "position": "right",
+          "action": { "type": "click" }
+        },
+        {
+          "selector": "#fixture-item-bath",
+          "title": "Add Fixtures",
+          "content": "Click on <strong>Bath</strong> to add it to your room.<br><br>💡 <em>Pro tip: You can also drag fixtures directly onto the canvas!</em>",
+          "position": "right",
+          "action": { "type": "click" }
+        },
+        {
+          "selector": "#btn-lock-room",
+          "title": "Lock Your Room",
+          "content": "Click <strong>Lock Room</strong> to prevent accidentally moving the room while you place fixtures. The room stays put, but fixtures remain moveable.",
+          "position": "bottom",
+          "action": { "type": "click" }
+        },
+        {
+          "selector": "#sidebar",
+          "title": "Resize & Rotate 📐",
+          "content": "Once an item is on the canvas, click it to select it. You'll see:<br><br>• <strong>Corner handles</strong> — drag to resize<br>• <strong>Circle handle</strong> (above) — drag to rotate<br><br>Try it on your room or fixtures!",
+          "position": "right"
+        },
+        {
+          "selector": "#btn-export",
+          "title": "Export Your Design",
+          "content": "When you're happy with your layout, click <strong>Export PDF</strong> to download a professional bathroom plan with AM Hancock branding.",
+          "position": "left"
+        },
+        {
+          "selector": "#sidebar",
+          "title": "You're Ready! 🎉",
+          "content": "That's it — you now know the basics!<br><br><strong>Pro tips:</strong><br>• <strong>Shift+Click</strong> to select multiple items<br>• <strong>Drag selected items</strong> to move them together<br><br>Happy designing!",
+          "position": "right"
+        }
+      ],
+      "options": {
+        "showProgress": true,
+        "showStepNumbers": true,
+        "allowKeyboardNav": true,
+        "spotlightPadding": 10,
+        "spotlightBorderRadius": 12
+      }
+    },
+    "feature-tour": {
+      "id": "feature-tour",
+      "name": "All Features",
+      "description": "A quick overview of everything the bathroom planner can do.",
+      "version": 2,
+      "steps": [
+        {
+          "selector": "#room-shapes-section",
+          "title": "Room Shapes",
+          "content": "Choose from <strong>Square</strong> or <strong>L-Shape</strong> room layouts. Click to add them, or <strong>drag</strong> them onto the canvas.",
+          "position": "right"
+        },
+        {
+          "selector": "#fixtures-section",
+          "title": "Bathroom Fixtures",
+          "content": "A complete library: <strong>Bath, Toilet, Shower, Basin, Radiator, Door, Mirror</strong> and more. <strong>Drag</strong> any item onto the canvas to place it.",
+          "position": "right"
+        },
+        {
+          "selector": "#sidebar",
+          "title": "Resize Items 📏",
+          "content": "Click any item on the canvas to select it. Drag the <strong>corner handles</strong> to resize it to your exact dimensions.",
+          "position": "right"
+        },
+        {
+          "selector": "#sidebar",
+          "title": "Rotate Items 🔄",
+          "content": "The <strong>circular handle</strong> above a selected item lets you rotate it. Perfect for fitting fixtures at angles!",
+          "position": "right"
+        },
+        {
+          "selector": "#btn-lock-room",
+          "title": "Lock Room",
+          "content": "Toggle this to <strong>lock the room in place</strong> while arranging fixtures. Prevents accidentally moving your room layout.",
+          "position": "bottom"
+        },
+        {
+          "selector": "#btn-undo",
+          "title": "Undo & Redo",
+          "content": "Made a mistake? Use <strong>Undo</strong> (⌘Z) and <strong>Redo</strong> (⌘⇧Z) to step through your changes.",
+          "position": "bottom"
+        },
+        {
+          "selector": "#btn-theme",
+          "title": "Theme Toggle",
+          "content": "Switch between <strong>Light</strong> and <strong>Dark</strong> mode for comfortable designing any time of day.",
+          "position": "bottom"
+        },
+        {
+          "selector": "#btn-export",
+          "title": "Export to PDF",
+          "content": "Download your bathroom plan as a <strong>professional PDF</strong> with AM Hancock branding. Perfect for sharing or printing!",
+          "position": "left"
+        },
+        {
+          "selector": "#btn-delete",
+          "title": "Delete Items",
+          "content": "Select items on the canvas, then click here to remove them. You can also press <strong>Delete</strong> or <strong>Backspace</strong>.",
+          "position": "top"
+        }
+      ],
+      "options": {
+        "showProgress": true,
+        "showStepNumbers": true,
+        "allowKeyboardNav": true,
+        "spotlightPadding": 10,
+        "spotlightBorderRadius": 12
+      }
+    }
+  }
+}

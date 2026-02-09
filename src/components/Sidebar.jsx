@@ -37,8 +37,9 @@ export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  const CollapsibleHeader = ({ title, expanded, onToggle, color }) => (
+  const CollapsibleHeader = ({ title, expanded, onToggle, color, id }) => (
     <button
+      id={id}
       onClick={onToggle}
       style={{
         width: '100%',
@@ -75,6 +76,7 @@ export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
 
   return (
     <div
+      id="sidebar"
       style={{
         width: '260px',
         background: 'var(--bg-sidebar)',
@@ -101,18 +103,20 @@ export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
       </p>
 
       {/* Room Shapes - Collapsible */}
-      <div>
+      <div id="room-shapes-section">
         <CollapsibleHeader
+          id="room-shapes-header"
           title="Room Shapes"
           expanded={roomsExpanded}
           onToggle={() => setRoomsExpanded(!roomsExpanded)}
           color="#ff6600"
         />
         {roomsExpanded && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {ROOM_ITEMS.map((item) => (
+          <div id="room-items" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {ROOM_ITEMS.map((item, index) => (
               <div
                 key={item.type}
+                id={`room-item-${item.type}`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
                 onClick={() => onAdd(item)}
@@ -156,15 +160,16 @@ export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
       </div>
 
       {/* Fixtures - Collapsible */}
-      <div>
+      <div id="fixtures-section">
         <CollapsibleHeader
+          id="fixtures-header"
           title="Fixtures & Details"
           expanded={fixturesExpanded}
           onToggle={() => setFixturesExpanded(!fixturesExpanded)}
           color="#005bab"
         />
         {fixturesExpanded && (
-          <div style={{
+          <div id="fixture-items" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: '6px'
@@ -172,6 +177,7 @@ export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
             {FIXTURE_ITEMS.map((item) => (
               <div
                 key={item.type}
+                id={`fixture-item-${item.type}`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
                 onClick={() => onAdd(item)}
@@ -227,6 +233,7 @@ export function Sidebar({ selectedIds, onDelete, onAdd, theme }) {
 
       {/* Delete Button - Always visible */}
       <button
+        id="btn-delete"
         onClick={onDelete}
         disabled={selectedIds.length === 0}
         style={{

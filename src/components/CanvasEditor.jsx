@@ -561,13 +561,12 @@ export const CanvasEditor = forwardRef(function CanvasEditor({ items, setItems, 
       <div className="absolute top-4 right-4 w-20 h-20 border-t-2 border-r-2 border-[var(--primary)]/10 rounded-tr-3xl pointer-events-none" />
       <div className="absolute bottom-4 left-4 w-20 h-20 border-b-2 border-l-2 border-[var(--secondary)]/10 rounded-bl-3xl pointer-events-none" />
 
-      {/* Zoom Controls - n8n style */}
       <div 
         className="zoom-toolbar"
         style={{
           position: 'absolute',
           bottom: '16px',
-          right: '16px',
+          right: '80px', // Moved left to avoid DAP help button
           zIndex: 10,
         }}
       >
